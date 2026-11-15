@@ -95,8 +95,8 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Konfirmasi Logout'),
-        content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+        title: const Text('Logout'),
+        content: const Text('Apakah Anda yakin ingin logout?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -119,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'alive':
         return Colors.green;
       case 'dead':
-        return Colors.redAccent;
+        return Colors.red;
       default:
         return Colors.grey;
     }
@@ -133,21 +133,19 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
             onPressed: _confirmLogout,
           ),
         ],
       ),
       body: Column(
         children: [
-          // Search Bar
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.all(12.0),
             child: TextField(
               controller: _searchController,
               onChanged: _onSearchChanged,
               decoration: InputDecoration(
-                hintText: 'Cari karakter berdasarkan nama...',
+                hintText: 'Cari nama karakter...',
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -158,15 +156,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       )
                     : null,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
             ),
           ),
-
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: Row(
               children: _statusOptions.map((status) {
                 final isSelected = _selectedStatus == status;
@@ -175,15 +171,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: ChoiceChip(
                     label: Text(status),
                     selected: isSelected,
-                    selectedColor:
-                        Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                    labelStyle: TextStyle(
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.black87,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
                     onSelected: (selected) {
                       if (selected) {
                         setState(() {
@@ -197,12 +184,8 @@ class _HomeScreenState extends State<HomeScreen> {
               }).toList(),
             ),
           ),
-
-          const Divider(height: 1),
-
-          Expanded(
-            child: _buildBody(),
-          ),
+          const SizedBox(height: 8),
+          Expanded(child: _buildBody()),
         ],
       ),
     );
@@ -210,156 +193,64 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_errorMessage != null) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 60,
-                color: Colors.redAccent,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Terjadi Kesalahan',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _fetchCharacters,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Coba Lagi'),
-              ),
-            ],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 12),
+            Text(_errorMessage!),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _fetchCharacters,
+              child: const Text('Coba Lagi'),
+            ),
+          ],
         ),
       );
     }
 
     if (_characters.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.search_off,
-                size: 64,
-                color: Colors.grey[400],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Karakter tidak ditemukan',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Coba gunakan kata kunci atau filter status yang berbeda.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-            ],
-          ),
-        ),
-      );
+      return const Center(child: Text('Karakter tidak ditemukan'));
     }
 
     return RefreshIndicator(
       onRefresh: _fetchCharacters,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         itemCount: _characters.length,
         itemBuilder: (context, index) {
           final character = _characters[index];
-          final statusColor = _getStatusColor(character.status);
+          final color = _getStatusColor(character.status);
 
           return Card(
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: const EdgeInsets.only(bottom: 8),
             child: ListTile(
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              leading: ClipOval(
-                child: Image.network(
-                  character.image,
-                  width: 56,
-                  height: 56,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 56,
-                    height: 56,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.broken_image, color: Colors.grey),
-                  ),
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      width: 56,
-                      height: 56,
-                      color: Colors.grey[200],
-                      child: const Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+              leading: CircleAvatar(
+                backgroundImage: NetworkImage(character.image),
+                onBackgroundImageError: (exception, stackTrace) {},
               ),
               title: Text(
                 character.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: statusColor,
-                        shape: BoxShape.circle,
-                      ),
+              subtitle: Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        '${character.status} - ${character.species}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.grey[700],
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text('${character.status} - ${character.species}'),
+                ],
               ),
               trailing: ValueListenableBuilder<List<Character>>(
                 valueListenable: FavoriteService.instance.favoritesNotifier,
@@ -369,22 +260,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   return IconButton(
                     icon: Icon(
                       isFav ? Icons.favorite : Icons.favorite_border,
-                      color: isFav ? Colors.redAccent : Colors.grey,
+                      color: isFav ? Colors.red : null,
                     ),
                     onPressed: () async {
-                      final isAdded = await FavoriteService.instance
+                      final added = await FavoriteService.instance
                           .toggleFavorite(character);
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).clearSnackBars();
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              isAdded
+                              added
                                   ? '${character.name} ditambahkan ke favorit'
                                   : '${character.name} dihapus dari favorit',
                             ),
                             duration: const Duration(seconds: 1),
-                            behavior: SnackBarBehavior.floating,
                           ),
                         );
                       }

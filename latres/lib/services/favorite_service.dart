@@ -6,7 +6,6 @@ import '../models/character.dart';
 class FavoriteService {
   static final FavoriteService instance = FavoriteService._internal();
   FavoriteService._internal();
-  factory FavoriteService() => instance;
 
   static const String _key = 'favorite_characters';
 
@@ -18,12 +17,10 @@ class FavoriteService {
       final prefs = await SharedPreferences.getInstance();
       final stringList = prefs.getStringList(_key) ?? [];
       final loadedList = stringList.map((item) {
-        final Map<String, dynamic> json =
-            jsonDecode(item) as Map<String, dynamic>;
-        return Character.fromJson(json);
+        return Character.fromJson(jsonDecode(item));
       }).toList();
       favoritesNotifier.value = loadedList;
-    } catch (e) {
+    } catch (_) {
       favoritesNotifier.value = [];
     }
   }
@@ -33,32 +30,32 @@ class FavoriteService {
   }
 
   Future<bool> toggleFavorite(Character character) async {
-    final currentList = List<Character>.from(favoritesNotifier.value);
-    final index = currentList.indexWhere((c) => c.id == character.id);
-    bool isAdded = false;
+    final list = List<Character>.from(favoritesNotifier.value);
+    final index = list.indexWhere((c) => c.id == character.id);
+    bool added = false;
 
     if (index >= 0) {
-      currentList.removeAt(index);
-      isAdded = false;
+      list.removeAt(index);
+      added = false;
     } else {
-      currentList.add(character);
-      isAdded = true;
+      list.add(character);
+      added = true;
     }
 
-    await _saveFavorites(currentList);
-    return isAdded;
+    await _save(list);
+    return added;
   }
 
   Future<void> removeFavorite(int characterId) async {
-    final currentList = List<Character>.from(favoritesNotifier.value);
-    currentList.removeWhere((c) => c.id == characterId);
-    await _saveFavorites(currentList);
+    final list = List<Character>.from(favoritesNotifier.value);
+    list.removeWhere((c) => c.id == characterId);
+    await _save(list);
   }
 
-  Future<void> _saveFavorites(List<Character> list) async {
+  Future<void> _save(List<Character> list) async {
     final prefs = await SharedPreferences.getInstance();
     final stringList = list.map((c) => jsonEncode(c.toJson())).toList();
     await prefs.setStringList(_key, stringList);
-    favoritesNotifier.value = List.unmodifiable(list);
+    favoritesNotifier.value = list;
   }
 }

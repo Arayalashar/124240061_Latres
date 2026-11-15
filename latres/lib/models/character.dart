@@ -20,31 +20,28 @@ class Character {
   });
 
   factory Character.fromJson(Map<String, dynamic> json) {
-    String parseOriginName(dynamic origin) {
-      if (origin is Map) {
-        return origin['name']?.toString() ?? '';
-      }
-      return json['originName']?.toString() ?? '';
+    final origin = json['origin'];
+    final location = json['location'];
+
+    String getOriginName() {
+      if (origin is Map) return origin['name'] ?? '';
+      return json['originName'] ?? '';
     }
 
-    String parseLocationName(dynamic location) {
-      if (location is Map) {
-        return location['name']?.toString() ?? '';
-      }
-      return json['locationName']?.toString() ?? '';
+    String getLocationName() {
+      if (location is Map) return location['name'] ?? '';
+      return json['locationName'] ?? '';
     }
 
     return Character(
-      id: json['id'] is int
-          ? json['id'] as int
-          : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      name: json['name']?.toString() ?? '',
-      status: json['status']?.toString() ?? '',
-      species: json['species']?.toString() ?? '',
-      gender: json['gender']?.toString() ?? '',
-      originName: parseOriginName(json['origin']),
-      locationName: parseLocationName(json['location']),
-      image: json['image']?.toString() ?? '',
+      id: json['id'] is int ? json['id'] : int.tryParse('${json['id']}') ?? 0,
+      name: json['name'] ?? '',
+      status: json['status'] ?? '',
+      species: json['species'] ?? '',
+      gender: json['gender'] ?? '',
+      originName: getOriginName(),
+      locationName: getLocationName(),
+      image: json['image'] ?? '',
     );
   }
 

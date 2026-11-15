@@ -13,12 +13,10 @@ class Episode {
 
   factory Episode.fromJson(Map<String, dynamic> json) {
     return Episode(
-      id: json['id'] is int
-          ? json['id'] as int
-          : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      name: json['name']?.toString() ?? '',
-      airDate: json['air_date']?.toString() ?? (json['airDate']?.toString() ?? ''),
-      episodeCode: json['episode']?.toString() ?? (json['episodeCode']?.toString() ?? ''),
+      id: json['id'] is int ? json['id'] : int.tryParse('${json['id']}') ?? 0,
+      name: json['name'] ?? '',
+      airDate: json['air_date'] ?? json['airDate'] ?? '',
+      episodeCode: json['episode'] ?? json['episodeCode'] ?? '',
     );
   }
 
