@@ -16,17 +16,23 @@ class UserAdapter extends TypeAdapter<User> {
 
   @override
   User read(BinaryReader reader) {
-    final username = reader.readString();
-    final password = reader.readString();
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
     return User(
-      username: username,
-      password: password,
+      username: fields[0] as String,
+      password: fields[1] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, User obj) {
-    writer.writeString(obj.username);
-    writer.writeString(obj.password);
+    writer
+      ..writeByte(2)
+      ..writeByte(0)
+      ..write(obj.username)
+      ..writeByte(1)
+      ..write(obj.password);
   }
 }

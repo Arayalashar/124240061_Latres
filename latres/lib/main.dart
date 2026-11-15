@@ -8,7 +8,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   Hive.registerAdapter(UserAdapter());
-  await Hive.openBox<User>('users');
+  try {
+    await Hive.openBox<User>('users');
+  } catch (_) {
+    await Hive.deleteBoxFromDisk('users');
+    await Hive.openBox<User>('users');
+  }
   await FavoriteService.instance.loadFavorites();
 
   runApp(const MyApp());
