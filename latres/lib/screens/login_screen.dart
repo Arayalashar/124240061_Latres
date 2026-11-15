@@ -59,7 +59,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final box = Hive.box<User>('users');
 
-    // Cari user yang username dan password-nya cocok
     final user = box.values.cast<User?>().firstWhere(
           (u) =>
               u != null &&
